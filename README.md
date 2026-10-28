@@ -57,7 +57,8 @@ The Arvan bundle sets the `status-data-url` HTML meta tag to
 public JSON with CORS enabled, so the independently hosted HTML can fetch fresh
 monitoring data. Do not set a custom domain on the GitHub Pages site: the Arvan
 page relies on this stable JSON URL. Only cache static assets on Arvan; JSON is
-requested directly from GitHub. The original page and GitHub-hosted preview
+requested directly from GitHub with a per-minute query parameter to bypass
+GitHub Pages' ten-minute shared cache. The original page and GitHub-hosted preview
 leave the meta tag empty to use their own data endpoint.
 
 The GitHub-hosted preview is `https://gerdoocloud.github.io/status/`.

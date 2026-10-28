@@ -472,7 +472,9 @@
 
       function load() {
         var dataURL = document.querySelector('meta[name="status-data-url"]').content;
-        fetch(dataURL || (location.hostname === "status.gerdoo.cloud" ? "/api/status/history" : "./status.json"), { cache: "no-store" })
+        var url = new URL(dataURL || (location.hostname === "status.gerdoo.cloud" ? "/api/status/history" : "./status.json"), location.href);
+        url.searchParams.set("t", Math.floor(Date.now() / 60000));
+        fetch(url.href, { cache: "no-store" })
           .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
           .then(function (data) {
             var age = Date.now() - Date.parse(data.checked_at);
