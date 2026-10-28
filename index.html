@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Light by default; dark only when the visitor chose it with the toggle. -->
+  <script>(function () { try { if (localStorage.getItem("gerdoo-theme") === "dark") document.documentElement.classList.add("dark"); } catch (e) { } })();</script>
+  <meta name="theme-color" content="#ffffff">
+  <title>وضعیت سرویس‌های گردو</title>
+  <meta name="description" content="وضعیت لحظه‌ای سرویس‌های گردو کلاد و سابقه ۹۰ روز گذشته: پنل کاربری، دسترسی به اپلیکیشن‌ها و وب‌سایت‌ها، استقرار اپلیکیشن‌ها و دامنه‌ها.">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="alternate icon" href="./favicon.ico" sizes="any">
+  <style>
+    /* Same typeface as gerdoo.cloud and the panel. */
+    @font-face { font-family: "Yekan Bakh"; src: url("./fonts/YekanBakh-VF.woff2") format("woff2"); font-weight: 100 950; font-display: swap; }
+
+    /* Design tokens copied from gerdoo.cloud (landing/src/index.css). Colour
+       is reserved for status; the brand orange is only an accent. */
+    :root {
+      --page: #ffffff;
+      --card: #ffffff;
+      --fg: #1d1d1f;
+      --body: #424245;
+      --muted: #6e6e73;
+      --faint: #aeaeb2;
+      --border: rgb(0 0 0 / 0.08);
+      --line: rgb(0 0 0 / 0.045);
+      --subtle: #f5f5f7;
+      --brand: #f6821f;
+      --shadow-pop: 0 18px 40px -12px rgb(0 0 0 / 0.18), 0 2px 8px rgb(0 0 0 / 0.04);
+      --up: #34c759;
+      --degraded: #ff9500;
+      --down: #ff3b30;
+      --maintenance: #aeaeb2;
+      --nodata: #e8e8ed;
+      --radius: 0.75rem;
+    }
+    .dark {
+      --page: #000000;
+      --card: #1c1c1e;
+      --fg: #f5f5f7;
+      --body: #d1d1d6;
+      --muted: #98989d;
+      --faint: #636366;
+      --border: rgb(255 255 255 / 0.1);
+      --line: rgb(255 255 255 / 0.05);
+      --subtle: #2c2c2e;
+      --shadow-pop: 0 18px 40px -12px rgb(0 0 0 / 0.7);
+      --up: #30d158;
+      --degraded: #ff9f0a;
+      --down: #ff453a;
+      --maintenance: #636366;
+      --nodata: #3a3a3c;
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--page); }
+    main, footer { position: relative; z-index: 1; }
+    body { margin: 0; color: var(--body); font-family: "Yekan Bakh", system-ui, sans-serif; line-height: 1.8; font-size: 14px; -webkit-font-smoothing: antialiased; position: relative; }
+    a { color: inherit; text-decoration: none; }
+    svg { display: block; }
+    .wrap { max-width: 1024px; margin: 0 auto; padding: 0 56px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); display: inline-block; flex-shrink: 0; }
+
+    /* The landing's faint grid, fading out under the headline. */
+    .grid-bg { position: absolute; inset: 0 0 auto 0; height: 560px; z-index: 0; pointer-events: none;
+      background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 40px 40px; background-position: center top;
+      -webkit-mask-image: radial-gradient(ellipse 70% 80% at 50% 0%, #000 30%, transparent 75%); mask-image: radial-gradient(ellipse 70% 80% at 50% 0%, #000 30%, transparent 75%); }
+
+    /* Top bar, as on gerdoo.cloud */
+    .top { border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--page) 80%, transparent); backdrop-filter: saturate(180%) blur(16px); -webkit-backdrop-filter: saturate(180%) blur(16px); position: sticky; top: 0; z-index: 5; }
+    .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+    .brand { display: flex; align-items: center; gap: 10px; color: var(--fg); font-weight: 800; font-size: 16px; }
+    .brand img { width: 24px; height: 24px; border-radius: 6px; }
+    .brand .sep { width: 1px; height: 16px; background: var(--border); margin: 0 6px; }
+    .brand .sub { color: var(--muted); font-weight: 500; font-size: 14px; }
+    .actions { display: flex; align-items: center; gap: 8px; }
+    .btn { height: 36px; padding: 0 16px; border-radius: 0.6rem; border: 1px solid var(--border); background: var(--card); color: var(--fg); font: inherit; font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: background-color .15s, opacity .15s; white-space: nowrap; }
+    .btn:hover { background: var(--subtle); }
+    .btn svg { width: 16px; height: 16px; }
+    .btn-primary { background: var(--fg); color: var(--page); border-color: transparent; }
+    .btn-primary:hover { background: var(--fg); opacity: 0.85; }
+    .icon-btn { width: 36px; padding: 0; justify-content: center; color: var(--muted); border-color: transparent; background: transparent; }
+    .icon-btn .sun { display: none; }
+    .dark .icon-btn .sun { display: block; }
+    .dark .icon-btn .moon { display: none; }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+
+    /* Headline + overall status */
+    .intro { text-align: center; padding: 88px 0 48px; }
+    .intro h1 { margin: 0; color: var(--fg); font-size: 44px; font-weight: 900; line-height: 1.35; letter-spacing: -0.01em; }
+    .intro h1 em { font-style: normal; color: var(--brand); }
+    .hero { display: inline-flex; flex-direction: column; align-items: center; margin-top: 22px; }
+    .hero .ic { display: none; }
+    .hero h2 { margin: 0; display: inline-flex; align-items: center; gap: 10px; color: var(--fg); font-size: 15px; font-weight: 700; background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 7px 18px 7px 16px; box-shadow: 0 1px 2px rgb(0 0 0 / 0.03); }
+    .hero h2::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 18%, transparent); }
+    .hero p { margin: 12px 0 0; color: var(--muted); font-size: 13px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0 14px; }
+    .hero p span { display: inline-flex; align-items: center; gap: 7px; }
+    .pulse { position: relative; width: 6px; height: 6px; border-radius: 50%; background: var(--up); }
+    .pulse::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--up); animation: pulse 2s ease-out infinite; }
+    @keyframes pulse { from { transform: scale(1); opacity: 0.6; } to { transform: scale(3); opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .pulse::after { animation: none; } }
+
+
+    /* Sections */
+    .sec { margin-top: 64px; }
+    #active:empty + .sec { margin-top: 8px; }
+    .sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .sec-head h2 { margin: 0; color: var(--fg); font-size: 22px; font-weight: 800; }
+    .sec-head .aside { color: var(--muted); font-size: 13px; }
+
+    /* Components */
+    .comp { padding: 22px 28px 18px; border-top: 1px solid var(--border); }
+    .comp:first-child { border-top: 0; }
+    .comp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
+    .comp-name { color: var(--fg); font-weight: 700; font-size: 15px; line-height: 1.6; }
+    .comp-desc { color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .state { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--body); white-space: nowrap; margin-top: 2px; }
+    /* Oldest day on the left, today on the right. */
+    .bars { display: flex; direction: ltr; gap: 3px; height: 30px; }
+    .bar { flex: 1; border-radius: 3px; min-width: 2px; background: var(--b); transition: opacity .15s; }
+    .bars:hover .bar { opacity: 0.35; }
+    .bars .bar:hover, .bar:focus { opacity: 1; outline: none; }
+    .bar.has-inc { cursor: pointer; }
+    .axis { display: flex; align-items: center; gap: 12px; color: var(--faint); font-size: 12px; margin-top: 10px; white-space: nowrap; }
+    .axis hr { flex: 1; border: 0; border-top: 1px solid var(--border); margin: 0; }
+    .axis .pct { color: var(--muted); font-weight: 600; }
+    .axis .d30 { display: none; }
+    .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--muted); font-size: 12.5px; margin-top: 14px; padding: 0 4px; }
+    .legend span { display: inline-flex; align-items: center; gap: 7px; }
+    .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+    .tip { position: fixed; z-index: 10; pointer-events: none; background: var(--card); color: var(--body); border: 1px solid var(--border); box-shadow: var(--shadow-pop); font-size: 12.5px; padding: 12px 14px; border-radius: var(--radius); width: 250px; display: none; line-height: 1.7; }
+    .tip .t-date { color: var(--fg); font-weight: 700; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .tip .t-row { display: flex; align-items: center; gap: 8px; }
+    .tip .t-inc { color: var(--muted); padding-right: 16px; }
+
+    /* Active incidents */
+    .live { margin-top: 16px; }
+    .live-head { padding: 18px 28px 4px; display: flex; align-items: center; gap: 10px; }
+    .live-head h3 { margin: 0; color: var(--fg); font-size: 16px; font-weight: 800; line-height: 1.6; flex: 1; }
+    .live-head span { color: var(--muted); font-size: 13px; white-space: nowrap; }
+    .live-body { padding: 0 28px 8px 28px; padding-right: 46px; }
+    .live-foot { padding: 12px 28px; border-top: 1px solid var(--border); background: var(--subtle); border-radius: 0 0 var(--radius) var(--radius); color: var(--muted); font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 24px; }
+    .live-foot b { color: var(--fg); font-weight: 600; }
+
+    /* Incident history, grouped by day */
+    .day { display: grid; grid-template-columns: 150px 1fr; gap: 20px; padding: 18px 28px; border-top: 1px solid var(--border); }
+    .day:first-child { border-top: 0; }
+    .day h3 { margin: 0; color: var(--fg); font-size: 13.5px; font-weight: 700; line-height: 1.75; }
+    .day .none { color: var(--faint); font-size: 13.5px; margin: 0; }
+    .inc + .inc { margin-top: 22px; }
+    .inc { scroll-margin-top: 96px; border-radius: 8px; transition: background-color .6s, box-shadow .6s; }
+    .inc.flash { background: var(--subtle); box-shadow: 0 0 0 10px var(--subtle); }
+    .inc-title { color: var(--fg); font-weight: 700; font-size: 15px; line-height: 1.6; display: flex; align-items: center; gap: 8px; }
+    .inc-title a { color: inherit; }
+    .inc-title .perma { color: var(--faint); opacity: 0; font-weight: 600; transition: opacity .15s; }
+    .inc:hover .perma { opacity: 1; }
+    .inc-meta { color: var(--muted); font-size: 12.5px; padding-right: 16px; display: flex; flex-wrap: wrap; gap: 0 10px; }
+    .inc-meta span + span::before { content: ""; display: inline-block; width: 1px; height: 11px; background: var(--border); margin-left: 10px; vertical-align: -1px; }
+    .upd { margin-top: 10px; padding-right: 16px; }
+    .upd p { margin: 0; color: var(--body); font-size: 14px; white-space: pre-line; }
+    .upd p b { color: var(--fg); font-weight: 700; }
+    .upd time { color: var(--faint); font-size: 12px; }
+    details.more { margin-top: 8px; padding-right: 16px; }
+    details.more summary { cursor: pointer; color: var(--muted); font-size: 12.5px; font-weight: 600; list-style: none; display: inline-flex; align-items: center; gap: 6px; }
+    details.more summary::-webkit-details-marker { display: none; }
+    details.more summary::before { content: ""; width: 6px; height: 6px; border-left: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); margin-top: -3px; transition: transform .15s; }
+    details.more[open] summary::before { transform: rotate(135deg); margin-top: 3px; }
+    details.more summary:hover { color: var(--fg); }
+    details.more .upd { padding-right: 0; }
+
+    /* Report a problem */
+    .help { margin-top: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 28px; flex-wrap: wrap; background: var(--subtle); border-color: transparent; }
+    .help b { display: block; color: var(--fg); font-size: 17px; font-weight: 800; }
+    .help span { color: var(--muted); font-size: 13.5px; }
+
+    footer { margin-top: 72px; border-top: 1px solid var(--border); }
+    footer .wrap { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 24px; padding-bottom: 28px; color: var(--muted); font-size: 12.5px; }
+    footer a:hover { color: var(--fg); }
+
+    @media (max-width: 760px) {
+      .wrap { padding: 0 16px; }
+      .brand .sep, .brand .sub, .hide-sm { display: none; }
+      .intro { padding: 56px 0 32px; }
+      .intro h1 { font-size: 30px; }
+      .sec { margin-top: 48px; }
+      .sec-head h2 { font-size: 19px; }
+      .comp { padding: 18px 16px 14px; }
+      .comp-desc { display: none; }
+      .day { grid-template-columns: 1fr; gap: 4px; padding: 16px; }
+      .live-head, .live-foot { padding-left: 16px; padding-right: 16px; }
+      .live-body { padding-left: 16px; padding-right: 34px; }
+      .help { padding: 20px 16px; }
+      /* Phones show the last 30 days, like most status pages. */
+      .bar:nth-child(-n+60) { display: none; }
+      .axis .d90 { display: none; }
+      .axis .d30 { display: inline; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="grid-bg" aria-hidden="true"></div>
+  <div class="top">
+    <div class="wrap">
+      <a class="brand" href="https://gerdoo.cloud"><img src="/favicon.svg" alt="">گردو<span class="sep"></span><span class="sub">وضعیت سرویس‌ها</span></a>
+      <div class="actions">
+        <button class="btn icon-btn" id="theme" type="button" aria-label="تغییر حالت روشن و تاریک" title="تغییر حالت روشن و تاریک">
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+        <a class="btn hide-sm" href="https://panel.gerdoo.cloud/signin">ورود</a>
+        <a class="btn btn-primary" href="https://panel.gerdoo.cloud/signup">شروع رایگان</a>
+      </div>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <section class="intro">
+      <h1>وضعیت سرویس‌های <em>گردو</em></h1>
+      <div class="hero" id="hero" style="--c:var(--faint)"><h2>در حال بررسی وضعیت…</h2></div>
+    </section>
+
+    <div id="active"></div>
+
+    <section class="sec">
+      <div class="sec-head"><h2>سرویس‌ها</h2><span class="aside">۹۰ روز گذشته</span></div>
+      <div class="card" id="components"></div>
+      <div class="legend">
+        <span><i style="background:var(--up)"></i>بدون مشکل</span>
+        <span><i style="background:var(--degraded)"></i>اختلال</span>
+        <span><i style="background:var(--down)"></i>قطعی</span>
+        <span><i style="background:var(--maintenance)"></i>به‌روزرسانی برنامه‌ریزی‌شده</span>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2>سابقه رخدادها</h2><span class="aside">۷ روز اخیر و رخدادهای ۹۰ روز گذشته</span></div>
+      <div class="card" id="history"></div>
+    </section>
+
+    <div class="card help">
+      <div><b>مشکلی می‌بینید که اینجا نیامده؟</b><span>اگر سرویس شما درست کار نمی‌کند، برای ما تیکت ثبت کنید تا بررسی کنیم.</span></div>
+      <a class="btn btn-primary" href="https://panel.gerdoo.cloud/support/new">ثبت تیکت پشتیبانی</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap"><span>© گردو کلاد · <a href="https://gerdoo.cloud">gerdoo.cloud</a></span><span id="updated"></span></div>
+  </footer>
+  <div class="tip" id="tip"></div>
+
+  <script>
+    (function () {
+      // Three status colours only: minor and major both read as "اختلال".
+      var IMPACT = {
+        minor: { label: "اختلال جزئی", color: "var(--degraded)", rank: 2 },
+        major: { label: "اختلال جدی", color: "var(--degraded)", rank: 3 },
+        critical: { label: "قطعی", color: "var(--down)", rank: 4 },
+        maintenance: { label: "به‌روزرسانی برنامه‌ریزی‌شده", color: "var(--maintenance)", rank: 1 }
+      };
+      var STATUS = { investigating: "در حال بررسی", identified: "علت پیدا شد", monitoring: "در حال اطمینان از پایداری", resolved: "برطرف شد" };
+      // Plain-language scope of each public row.
+      var DESC = {
+        api: "پاسخ‌گویی رابط برنامه‌نویسی و آمادگی سرویس اصلی",
+        dashboard: "ورود به پنل و مدیریت سرویس‌ها، دامنه‌ها و صورت‌حساب",
+        k8s_gateway: "باز شدن اپلیکیشن‌ها و وب‌سایت‌هایی که روی گردو میزبانی می‌شوند",
+        k8s_cluster: "ساخت و انتشار نسخه‌های جدید، راه‌اندازی دوباره و تغییر منابع",
+        dns: "پاسخ‌گویی نام‌سرورهای گردو به دامنه‌های شما"
+      };
+      var ICON = {
+        ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+        warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5v7M12 17.5h.01"/></svg>',
+        wrench: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0 5 5L21 13l-8 8-3-3 8-8-1.3-1.3a4 4 0 0 0-5-5L14 2z"/></svg>'
+      };
+
+      var fa = function (n, d) { return Number(n).toLocaleString("fa-IR", { maximumFractionDigits: d || 0, minimumFractionDigits: d || 0 }); };
+      // 100 reads as "۱۰۰٪"; anything less keeps two decimals so 99.98 is not rounded up.
+      var percent = function (n) { return (n >= 100 ? fa(100) : fa(Math.floor(n * 100) / 100, 2)) + "٪"; };
+      var tehranDay = function (t) { return new Date(t).toLocaleDateString("en-CA", { timeZone: "Asia/Tehran" }); };
+      var faDate = function (day) { return new Date(day + "T12:00:00+03:30").toLocaleDateString("fa-IR", { timeZone: "Asia/Tehran", day: "numeric", month: "long", year: "numeric" }); };
+      var faClock = function (t) { return new Date(t).toLocaleTimeString("fa-IR", { timeZone: "Asia/Tehran", hour: "2-digit", minute: "2-digit" }); };
+      var faDay = function (t) { return new Date(t).toLocaleDateString("fa-IR", { timeZone: "Asia/Tehran", day: "numeric", month: "long" }); };
+      var stamp = function (t) { return faDay(t) + "، ساعت " + faClock(t); };
+      var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
+      var $ = function (id) { return document.getElementById(id); };
+      function duration(ms) {
+        var m = Math.max(1, Math.round(ms / 60000)), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), r = m % 60;
+        var parts = [];
+        if (d) parts.push(fa(d) + " روز");
+        if (h) parts.push(fa(h) + " ساعت");
+        if (r && !d) parts.push(fa(r) + " دقیقه");
+        return parts.join(" و ");
+      }
+
+      $("theme").onclick = function () {
+        var dark = document.documentElement.classList.toggle("dark");
+        try { localStorage.setItem("gerdoo-theme", dark ? "dark" : "light"); } catch (e) { }
+      };
+
+      // A day's colour is the worse of its confirmed outage minutes (several
+      // failed minutes in a row; single blips never count) and any incident
+      // declared against the component that day.
+      function measured(outageMinutes) {
+        if (!outageMinutes) return { color: "var(--up)", rank: 0 };
+        if (outageMinutes < 120) return { color: "var(--degraded)", rank: 3 };
+        return { color: "var(--down)", rank: 4 };
+      }
+
+      function incidentsOn(incidents, key, day) {
+        return incidents.filter(function (inc) {
+          if (inc.components.length && inc.components.indexOf(key) < 0) return false;
+          var from = tehranDay(inc.started_at);
+          var to = inc.resolved_at ? tehranDay(inc.resolved_at) : tehranDay(Date.now());
+          return day >= from && day <= to;
+        });
+      }
+
+      function dayShade(data, c, d) {
+        var shade = !d.checks && !d.outage_minutes ? { color: "var(--nodata)", rank: 0 } : measured(d.outage_minutes);
+        incidentsOn(data.incidents, c.key, d.date).forEach(function (inc) {
+          var m = IMPACT[inc.impact];
+          if (m.rank > shade.rank) shade = { color: m.color, rank: m.rank };
+        });
+        return shade;
+      }
+
+      function renderComponents(data) {
+        $("components").innerHTML = data.components.map(function (c, ci) {
+          var bars = c.days.map(function (d, di) {
+            var inc = incidentsOn(data.incidents, c.key, d.date)[0];
+            return '<span class="bar' + (inc ? " has-inc" : "") + '" tabindex="0" data-c="' + ci + '" data-d="' + di + '"' + (inc ? ' data-inc="' + inc.id + '"' : "") +
+              ' style="--b:' + dayShade(data, c, d).color + '"></span>';
+          }).join("");
+          var state = c.operational
+            ? '<span class="state"><span class="dot" style="--c:var(--up)"></span>فعال</span>'
+            : '<span class="state"><span class="dot" style="--c:var(--down)"></span>دچار مشکل</span>';
+          var pct = c.uptime === null ? "" : '<hr><span class="pct">' + percent(c.uptime) + " در دسترس</span>";
+          return '<div class="comp"><div class="comp-head"><div><div class="comp-name">' + esc(c.name) + "</div>" +
+            (DESC[c.key] ? '<div class="comp-desc">' + DESC[c.key] + "</div>" : "") + "</div>" + state + "</div>" +
+            '<div class="bars">' + bars + "</div>" +
+            '<div class="axis"><span>امروز</span>' + pct + '<hr><span class="d90">۹۰ روز پیش</span><span class="d30">۳۰ روز پیش</span></div></div>';
+        }).join("");
+
+        var known = data.components.filter(function (c) { return c.uptime !== null; });
+
+
+        var tip = $("tip");
+        var show = function (el) {
+          var c = data.components[+el.dataset.c], d = c.days[+el.dataset.d];
+          var incs = incidentsOn(data.incidents, c.key, d.date);
+          var html = '<div class="t-date">' + faDate(d.date) + "</div>";
+          if (d.outage_minutes) html += '<div class="t-row"><span class="dot" style="--c:' + measured(d.outage_minutes).color + '"></span>حدود ' + fa(d.outage_minutes) + " دقیقه قطعی</div>";
+          else if (!incs.length) html += d.checks ? '<div class="t-row"><span class="dot" style="--c:var(--up)"></span>بدون مشکل</div>' : '<div class="t-row">داده‌ای ثبت نشده است</div>';
+          incs.forEach(function (inc) {
+            html += '<div class="t-row"><span class="dot" style="--c:' + IMPACT[inc.impact].color + '"></span>' + IMPACT[inc.impact].label + '</div><div class="t-inc">' + esc(inc.title) + "</div>";
+          });
+          tip.innerHTML = html;
+          tip.style.display = "block";
+          var r = el.getBoundingClientRect();
+          var left = Math.min(Math.max(8, r.left + r.width / 2 - tip.offsetWidth / 2), window.innerWidth - tip.offsetWidth - 8);
+          var top = r.top - tip.offsetHeight - 10;
+          tip.style.left = left + "px";
+          tip.style.top = (top < 8 ? r.bottom + 10 : top) + "px";
+        };
+        var hide = function () { tip.style.display = "none"; };
+        Array.prototype.forEach.call(document.querySelectorAll(".bar"), function (el) {
+          el.onmouseenter = el.onfocus = function () { show(el); };
+          el.onmouseleave = el.onblur = hide;
+          if (el.dataset.inc) el.onclick = el.onkeydown = function (e) {
+            if (e.type === "keydown" && e.key !== "Enter") return;
+            hide();
+            focusIncident(el.dataset.inc);
+          };
+        });
+      }
+
+      function updatesHTML(inc) {
+        return inc.updates.slice().reverse().map(function (u) {
+          return '<div class="upd"><p><b>' + (STATUS[u.status] || esc(u.status)) + "</b> — " + esc(u.message) + "</p><time>" + stamp(u.created_at) + "</time></div>";
+        }).join("\n");
+      }
+
+      function componentNames(inc, names) {
+        return inc.components.length ? inc.components.map(function (k) { return names[k] || k; }).join("، ") : "همه سرویس‌ها";
+      }
+
+      function renderActive(inc, names) {
+        var m = IMPACT[inc.impact] || IMPACT.minor;
+        return '<div class="card live"><div class="live-head"><span class="dot" style="--c:' + m.color + '"></span><h3>' + esc(inc.title) + "</h3><span>" + m.label + "</span></div>" +
+          '<div class="live-body">' + updatesHTML(inc).replace(/\n/g, "").replace(/class="upd"/g, 'class="upd" style="padding-right:0"') + "</div>" +
+          '<div class="live-foot"><span>سرویس‌های درگیر: <b>' + esc(componentNames(inc, names)) + "</b></span><span>شروع: <b>" + stamp(inc.started_at) +
+          "</b></span><span>مدت تاکنون: <b>" + duration(Date.now() - new Date(inc.started_at)) + "</b></span></div></div>";
+      }
+
+      // Scrolls to an incident (from a bar or a #incident-N link) and flashes it.
+      function focusIncident(id) {
+        var el = document.getElementById("incident-" + id);
+        if (!el) return;
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("flash");
+        setTimeout(function () { el.classList.remove("flash"); }, 1600);
+      }
+
+      function renderPast(inc, names) {
+        var m = IMPACT[inc.impact] || IMPACT.minor;
+        var span = tehranDay(inc.started_at) === tehranDay(inc.resolved_at)
+          ? "ساعت " + faClock(inc.started_at) + " تا " + faClock(inc.resolved_at)
+          : stamp(inc.started_at) + " تا " + stamp(inc.resolved_at);
+        // The latest update (usually the resolution) stays visible; the rest fold away.
+        var ups = updatesHTML(inc).split("\n");
+        var more = ups.length > 1 ? '<details class="more"><summary>نمایش روند رخداد (' + fa(ups.length - 1) + " به‌روزرسانی دیگر)</summary>" + ups.slice(1).join("") + "</details>" : "";
+        return '<div class="inc" id="incident-' + inc.id + '"><div class="inc-title"><span class="dot" style="--c:' + m.color + '"></span><a href="#incident-' + inc.id + '">' + esc(inc.title) +
+          '</a><a class="perma" href="#incident-' + inc.id + '" aria-label="پیوند به این رخداد">#</a></div>' +
+          '<div class="inc-meta"><span>' + m.label + "</span><span>" + esc(componentNames(inc, names)) + "</span><span>" + span + "</span><span>مدت " +
+          duration(new Date(inc.resolved_at) - new Date(inc.started_at)) + "</span></div>" + ups[0] + more + "</div>";
+      }
+
+      // The last 7 days always appear, quiet ones included; older days only
+      // when something happened on them.
+      function renderHistory(past, names) {
+        var byDay = {};
+        past.forEach(function (inc) { var d = tehranDay(inc.started_at); (byDay[d] = byDay[d] || []).push(inc); });
+        var days = [];
+        for (var i = 0; i < 7; i++) days.push(tehranDay(Date.now() - i * 864e5));
+        var older = Object.keys(byDay).filter(function (d) { return days.indexOf(d) < 0; }).sort().reverse();
+        return days.concat(older).map(function (d) {
+          return '<div class="day"><h3>' + faDate(d) + "</h3><div>" + (byDay[d]
+            ? byDay[d].map(function (inc) { return renderPast(inc, names); }).join("")
+            : '<p class="none">رخدادی گزارش نشده است.</p>') + "</div></div>";
+        }).join("");
+      }
+
+      var rendered = false;
+
+      function render(data) {
+        var names = {};
+        data.components.forEach(function (c) { names[c.key] = c.name; });
+        var active = data.incidents.filter(function (i) { return i.status !== "resolved"; });
+        var past = data.incidents.filter(function (i) { return i.status === "resolved" && i.resolved_at; });
+        var down = data.components.filter(function (c) { return !c.operational; });
+
+        var color, title, icon;
+        if (active.some(function (i) { return i.impact !== "maintenance"; }) || down.length) {
+          var critical = down.length || active.some(function (i) { return i.impact === "critical"; });
+          color = critical ? "var(--down)" : "var(--degraded)";
+          title = down.length ? "مشکل در " + down.map(function (c) { return c.name; }).join("، ") : "برخی سرویس‌ها با اختلال روبه‌رو هستند";
+          icon = ICON.warn;
+        } else if (active.length) {
+          color = "var(--maintenance)"; title = "در حال انجام به‌روزرسانی برنامه‌ریزی‌شده"; icon = ICON.wrench;
+        } else {
+          color = "var(--up)"; title = "همه سرویس‌ها بدون مشکل کار می‌کنند"; icon = ICON.ok;
+        }
+        $("hero").style.setProperty("--c", color);
+        $("hero").innerHTML = '<div class="ic">' + icon + '</div><div class="hero-main"><h2>' + esc(title) + '</h2><p><span><i class="pulse"></i>پایش لحظه‌ای</span><span>آخرین بررسی: ' + stamp(data.checked_at) + "</span></p></div>";
+
+        $("active").innerHTML = active.map(function (i) { return renderActive(i, names); }).join("");
+        $("history").innerHTML = renderHistory(past, names);
+        renderComponents(data);
+        if (!rendered && /^#incident-\d+$/.test(location.hash)) focusIncident(location.hash.slice(10));
+        rendered = true;
+        $("updated").textContent = "این صفحه هر دقیقه داده‌ها را دریافت می‌کند؛ پایش بیرونی حدود هر ۵ دقیقه انجام می‌شود";
+      }
+
+      function load() {
+        fetch(location.hostname === "status.gerdoo.cloud" ? "/api/status/history" : "./status.json", { cache: "no-store" })
+          .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+          .then(function (data) {
+            var age = Date.now() - Date.parse(data.checked_at);
+            if (!Number.isFinite(age) || age > 20 * 60000) throw new Error("stale monitoring data");
+            render(data);
+          })
+          .catch(function () {
+            $("hero").style.setProperty("--c", "var(--degraded)");
+            $("hero").innerHTML = '<div class="ic">' + ICON.warn + '</div><div class="hero-main"><h2>دریافت وضعیت سرویس‌ها ممکن نشد</h2>' +
+              "<p>داده‌های پایش در دسترس نیست یا به‌روز نیست. وضعیت فعلی سرویس‌ها مشخص نیست.</p></div>";
+            $("components").innerHTML = "";
+          });
+      }
+      load();
+      setInterval(load, 60000);
+    })();
+  </script>
+</body>
+
+</html>
