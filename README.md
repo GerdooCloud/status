@@ -1,6 +1,6 @@
 # External Gerdoo status page
 
-The standalone deployment is `GerdooCloud/status` on GitHub Pages. Its source
+The external monitor is `GerdooCloud/status` on GitHub Pages. Its source
 contains only this public page, external probes, public incident/history data,
 and fonts/icons. The private Gerdoo repository is never published.
 
@@ -39,16 +39,20 @@ treated as healthy. A private repository would require a paid GitHub Pages plan.
 
 ## Domain and cutover
 
-Configure GitHub Pages to publish via GitHub Actions. Initially verify the page
-at `https://gerdoocloud.github.io/status/`, including `status.json` and fonts.
+The user handles static hosting and DNS on Arvan. The upload bundle is
+`artifacts/gerdoo-status-arvan.zip` in the Gerdoo workspace. Upload its contents
+to the static site root, retaining `fonts/`, and attach `gerdoocloudstatus.ir`
+with HTTPS through Arvan. No server process or build command is required.
 
-Set the Pages custom domain to `gerdoocloudstatus.ir`. In the domain's independent
-Arvan DNS zone, add the four GitHub Pages apex A records from
-[GitHub's current domain instructions](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site).
-Do not point the domain at Gerdoo or enable a CDN proxy while verifying Pages.
-Verify ownership with GitHub's account-specific TXT record, and enable Enforce
-HTTPS once GitHub provisions the certificate. Do not replace the existing MX,
-TXT, or other unrelated records.
+The Arvan bundle sets the `status-data-url` HTML meta tag to
+`https://gerdoocloud.github.io/status/status.json`. GitHub Pages serves this
+public JSON with CORS enabled, so the independently hosted HTML can fetch fresh
+monitoring data. Do not set a custom domain on the GitHub Pages site: the Arvan
+page relies on this stable JSON URL. Only cache static assets on Arvan; JSON is
+requested directly from GitHub. The original page and GitHub-hosted preview
+leave the meta tag empty to use their own data endpoint.
+
+The GitHub-hosted preview is `https://gerdoocloud.github.io/status/`.
 
 After HTTPS and fresh external checks work on the new domain:
 

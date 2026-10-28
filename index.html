@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="status-data-url" content="">
   <!-- Light by default; dark only when the visitor chose it with the toggle. -->
   <script>(function () { try { if (localStorage.getItem("gerdoo-theme") === "dark") document.documentElement.classList.add("dark"); } catch (e) { } })();</script>
   <meta name="theme-color" content="#ffffff">
@@ -467,7 +468,8 @@
       }
 
       function load() {
-        fetch(location.hostname === "status.gerdoo.cloud" ? "/api/status/history" : "./status.json", { cache: "no-store" })
+        var dataURL = document.querySelector('meta[name="status-data-url"]').content;
+        fetch(dataURL || (location.hostname === "status.gerdoo.cloud" ? "/api/status/history" : "./status.json"), { cache: "no-store" })
           .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
           .then(function (data) {
             var age = Date.now() - Date.parse(data.checked_at);
