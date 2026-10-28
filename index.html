@@ -322,7 +322,7 @@
       }
 
       function dayShade(data, c, d) {
-        var shade = !d.checks && !d.outage_minutes ? { color: "var(--nodata)", rank: 0 } : measured(d.outage_minutes);
+        var shade = measured(d.outage_minutes);
         incidentsOn(data.incidents, c.key, d.date).forEach(function (inc) {
           var m = IMPACT[inc.impact];
           if (m.rank > shade.rank) shade = { color: m.color, rank: m.rank };
@@ -337,7 +337,7 @@
             return '<span class="bar' + (inc ? " has-inc" : "") + '" tabindex="0" data-c="' + ci + '" data-d="' + di + '"' + (inc ? ' data-inc="' + inc.id + '"' : "") +
               ' style="--b:' + dayShade(data, c, d).color + '"></span>';
           }).join("");
-          var state = c.operational
+          var state = c.operational === null ? '<span class="state"><span class="dot" style="--c:var(--faint)"></span>نامشخص</span>' : c.operational
             ? '<span class="state"><span class="dot" style="--c:var(--up)"></span>فعال</span>'
             : '<span class="state"><span class="dot" style="--c:var(--down)"></span>دچار مشکل</span>';
           var pct = c.uptime === null ? "" : '<hr><span class="pct">' + percent(c.uptime) + " در دسترس</span>";
@@ -356,7 +356,7 @@
           var incs = incidentsOn(data.incidents, c.key, d.date);
           var html = '<div class="t-date">' + faDate(d.date) + "</div>";
           if (d.outage_minutes) html += '<div class="t-row"><span class="dot" style="--c:' + measured(d.outage_minutes).color + '"></span>حدود ' + fa(d.outage_minutes) + " دقیقه قطعی</div>";
-          else if (!incs.length) html += d.checks ? '<div class="t-row"><span class="dot" style="--c:var(--up)"></span>بدون مشکل</div>' : '<div class="t-row">داده‌ای ثبت نشده است</div>';
+          else if (!incs.length) html += '<div class="t-row"><span class="dot" style="--c:var(--up)"></span>بدون مشکل</div>';
           incs.forEach(function (inc) {
             html += '<div class="t-row"><span class="dot" style="--c:' + IMPACT[inc.impact].color + '"></span>' + IMPACT[inc.impact].label + '</div><div class="t-inc">' + esc(inc.title) + "</div>";
           });
@@ -443,7 +443,8 @@
         data.components.forEach(function (c) { names[c.key] = c.name; });
         var active = data.incidents.filter(function (i) { return i.status !== "resolved"; });
         var past = data.incidents.filter(function (i) { return i.status === "resolved" && i.resolved_at; });
-        var down = data.components.filter(function (c) { return !c.operational; });
+        var down = data.components.filter(function (c) { return c.operational === false; });
+        var unknown = data.components.filter(function (c) { return c.operational === null; });
 
         var color, title, icon;
         if (active.some(function (i) { return i.impact !== "maintenance"; }) || down.length) {
@@ -453,6 +454,8 @@
           icon = ICON.warn;
         } else if (active.length) {
           color = "var(--maintenance)"; title = "در حال انجام به‌روزرسانی برنامه‌ریزی‌شده"; icon = ICON.wrench;
+        } else if (unknown.length) {
+          color = "var(--faint)"; title = "وضعیت برخی سرویس‌ها مشخص نیست"; icon = ICON.warn;
         } else {
           color = "var(--up)"; title = "همه سرویس‌ها بدون مشکل کار می‌کنند"; icon = ICON.ok;
         }
@@ -464,7 +467,7 @@
         renderComponents(data);
         if (!rendered && /^#incident-\d+$/.test(location.hash)) focusIncident(location.hash.slice(10));
         rendered = true;
-        $("updated").textContent = "این صفحه هر دقیقه داده‌ها را دریافت می‌کند؛ پایش بیرونی حدود هر ۵ دقیقه انجام می‌شود";
+        $("updated").textContent = "این صفحه هر دقیقه به‌روز می‌شود";
       }
 
       function load() {

@@ -12,24 +12,32 @@ standalone repository; this directory records the migration source.
 
 ## Monitoring and incidents
 
-GitHub-hosted runners probe the panel, API readiness, public application gateway
-(with TLS verification), and Gerdoo's authoritative DNS directly. No Gerdoo API
-is needed to serve the status page or record these checks. Kubernetes deployment
-operations cannot be checked from outside the cluster, so that component is
-retained only in the history export, not presented as externally monitored.
+GitHub-hosted runners probe the panel, public application gateway (with TLS
+verification), and Gerdoo's authoritative DNS directly. They also mirror the
+original public history and incidents from `https://api.gerdoo.cloud/api/status/history`.
+The page retains the original four components, including deployment operations.
+That internal component uses the fresh API snapshot; it becomes unknown if the
+API is unavailable. The last successful history remains stored externally, and
+the other three probes continue independently during a Gerdoo outage.
 
 Checks run approximately every five minutes, retry failures once, and keep
 90 days of sample counts in the `status-data` branch. GitHub Actions can delay
 or skip scheduled jobs; the page shows unknown status after 20 minutes without
-a new sample. Missing days are grey. Failed samples estimate five minutes of
+a new sample. History bars follow the original page's incident/outage colors.
+Green means no recorded incident or confirmed outage, including before probe
+records began; it does not establish measured uptime for unobserved days.
+Failed samples estimate five minutes of
 unavailability each; gaps between jobs are not counted as confirmed uptime or
-downtime. Uptime percentages are sample based; the old page used hourly buckets.
+downtime. Uptime percentages use the original hourly buckets and include
+declared incidents, with overlapping intervals counted once. Exported historical
+outage percentages are preserved; the export does not contain their exact spans.
 This is basic monitoring, not a guaranteed one-minute alerting service.
 
 `history.json` archives the old public snapshot and seeds daily probe counts
-once. `incidents.json` holds the exported public incidents. Add incident updates
-there and commit to `main` to publish them, even when Gerdoo is unavailable.
-The existing Gerdoo admin incident editor does not publish to this external page.
+once. `incidents.json` holds the exported public incidents. The existing Gerdoo
+admin incident editor is mirrored on the next successful history sync. Add or
+edit incidents in `incidents.json` and commit to `main` to publish manual
+overrides even when Gerdoo is unavailable.
 Keep the existing incident JSON shape, timestamps, and numeric IDs; use the
 component keys from `monitor.py`. Old incidents may refer to `k8s_cluster`.
 
